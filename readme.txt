@@ -19,3 +19,4 @@ git checkout -b dev 创建dec分支并切换到dev分支
   git checkout dev
   git branch 查看当前分支
 git merge dev 将dev分支合并到master
+git merge --no-ff -m "merge with no-ff" dev 禁用快速合并，生成一次新的commit
