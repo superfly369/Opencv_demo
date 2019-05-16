@@ -4,3 +4,5 @@
 
 git log 查看日志
 git reset --hard HEAD^ 返回上一个版本
+git reset --hard 加版本号回到指定版本
+git reflog 记录每一次命令
