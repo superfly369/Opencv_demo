@@ -7,3 +7,4 @@ git reset --hard HEAD^ 返回上一个版本
 git reset --hard 加版本号回到指定版本
 git reflog 记录每一次命令
 git diff HEAD -- readme.txt 比较工作区和版本库里面最新版本的区别
+git checkout -- file 恢复到上一次commit或者add的情况
