@@ -33,3 +33,8 @@ git stash pop 恢复并删除
 
 git tag v1.0
 git tag -a v1.1 -m "v1.1" commitID
+
+命令git push origin <tagname>可以推送一个本地标签；
+命令git push origin --tags可以推送全部未推送过的本地标签；
+命令git tag -d <tagname>可以删除一个本地标签；
+命令git push origin :refs/tags/<tagname>可以删除一个远程标签
