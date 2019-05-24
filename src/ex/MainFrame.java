@@ -15,10 +15,17 @@ import javax.swing.JFileChooser;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.awt.event.ActionEvent;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.ImageIcon;
 
 public class MainFrame extends JFrame {
 
 	private JPanel contentPane;
+	private JTextField text1;
+	
 
 	/**
 	 * Launch the application.
@@ -40,65 +47,93 @@ public class MainFrame extends JFrame {
 	 * Create the frame.
 	 */
 	public MainFrame() {
+		JFileChooser jfc = new JFileChooser();// 文件选择器
+		jfc.setCurrentDirectory(new File("d://"));// 文件选择器的初始目录定为d盘
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 900, 600);
+		setBounds(100, 100, 1293, 660);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
 		JPanel panel = new JPanel();
-		panel.setBounds(0, 0, 868, 553);
+		panel.setBounds(0, 0, 1275, 616);
 		contentPane.add(panel);
 		panel.setLayout(null);
-		
-		JRadioButton showImgBtn = new JRadioButton("\u663E\u793A\u56FE\u7247");
-		showImgBtn.setBounds(0, 42, 157, 27);
-		panel.add(showImgBtn);
-		
-		JLabel selectLbl = new JLabel("\u529F\u80FD\u9009\u62E9");
-		selectLbl.setBounds(14, 13, 72, 18);
-		panel.add(selectLbl);
-		
-		JRadioButton rdbtnNewRadioButton_1 = new JRadioButton("\u56FE\u7247\u5E73\u79FB");
-		rdbtnNewRadioButton_1.setBounds(0, 74, 157, 27);
-		panel.add(rdbtnNewRadioButton_1);
-		
-		JRadioButton rdbtnNewRadioButton_2 = new JRadioButton("\u56FE\u7247\u7F29\u653E");
-		rdbtnNewRadioButton_2.setBounds(0, 107, 157, 27);
-		panel.add(rdbtnNewRadioButton_2);
-		
-		JRadioButton rdbtnNewRadioButton_3 = new JRadioButton("\u56FE\u7247\u65CB\u8F6C");
-		rdbtnNewRadioButton_3.setBounds(0, 139, 157, 27);
-		panel.add(rdbtnNewRadioButton_3);
-		
-		JRadioButton rdbtnNewRadioButton_4 = new JRadioButton("\u5085\u91CC\u53F6\u53D8\u6362");
-		rdbtnNewRadioButton_4.setBounds(0, 171, 157, 27);
-		panel.add(rdbtnNewRadioButton_4);
-		
-		JButton defineBtn = new JButton("\u786E\u5B9A");
-		defineBtn.setBounds(0, 218, 95, 27);
+					
+		JButton defineBtn = new JButton("确定");
+		defineBtn.setBounds(9, 219, 95, 27);
 		panel.add(defineBtn);
 		
 		JButton SelectImgBtn = new JButton("选择图片");
-		SelectImgBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (e.getActionCommand().equals("open")){
-					JFileChooser jf = new JFileChooser();
-					jf.showOpenDialog(this);//显示打开的文件对话框
-					File f =  jf.getSelectedFile();//使用文件类获取选择器选择的文件
-					String s = f.getAbsolutePath();//返回路径名
-					//JOptionPane弹出对话框类，显示绝对路径名
-					JOptionPane.showMessageDialog(null, s, "标题",JOptionPane.WARNING_MESSAGE);  
-				}
-
-			}
-		});
 		SelectImgBtn.setBounds(703, 13, 113, 27);
 		panel.add(SelectImgBtn);
 		
 		JPanel showImg = new JPanel();
-		showImg.setBounds(167, 59, 701, 481);
+		showImg.setBounds(167, 59, 980, 480);
 		panel.add(showImg);
+		showImg.setLayout(null);
+		
+		JLabel yuantu = new JLabel("");
+		yuantu.setBounds(0, 0, 480, 480);
+		showImg.add(yuantu);
+		
+		JLabel 显示图 = new JLabel("");
+		显示图.setBounds(494, 0, 480, 480);
+		showImg.add(显示图);
+		
+		text1 = new JTextField();
+		text1.setBounds(360, 14, 317, 24);
+		panel.add(text1);
+		text1.setColumns(10);
+		
+		JTree tree = new JTree();
+		tree.setModel(new DefaultTreeModel(
+			new DefaultMutableTreeNode("选择功能") {
+				{
+					DefaultMutableTreeNode node_1;
+					node_1 = new DefaultMutableTreeNode("实验二");
+						node_1.add(new DefaultMutableTreeNode("图片平移"));
+						node_1.add(new DefaultMutableTreeNode("图片旋转"));
+						node_1.add(new DefaultMutableTreeNode("图片缩放"));
+						node_1.add(new DefaultMutableTreeNode("傅里叶变换"));
+					add(node_1);
+					node_1 = new DefaultMutableTreeNode("实验三");
+						node_1.add(new DefaultMutableTreeNode("basketball"));
+						node_1.add(new DefaultMutableTreeNode("soccer"));
+						node_1.add(new DefaultMutableTreeNode("football"));
+						node_1.add(new DefaultMutableTreeNode("hockey"));
+					add(node_1);
+					node_1 = new DefaultMutableTreeNode("实验四");
+						node_1.add(new DefaultMutableTreeNode("hot dogs"));
+						node_1.add(new DefaultMutableTreeNode("pizza"));
+						node_1.add(new DefaultMutableTreeNode("ravioli"));
+						node_1.add(new DefaultMutableTreeNode("bananas"));
+					add(node_1);
+				}
+			}
+		));
+		tree.setBounds(9, 13, 144, 193);
+		panel.add(tree);
+		
+
+		SelectImgBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//if (e.getActionCommand().equals(SelectImgBtn)){
+					jfc.setFileSelectionMode(0);// 设定只能选择到文件
+					int state = jfc.showOpenDialog(null);// 此句是打开文件选择器界面的触发语句
+					if (state == 1) {
+						return;// 撤销则返回
+					} else {
+						File f = jfc.getSelectedFile();// f为选择到的文件
+						text1.setText(f.getAbsolutePath());
+						yuantu.setIcon(new ImageIcon(f.getAbsolutePath()));
+					}
+				//}
+
+			}
+		});
+
 	}
 }
