@@ -32,5 +32,23 @@ public class Rotate {
             e.printStackTrace();
         }
     }
- 
+   public void retote(String filename){
+	     Mat src=Imgcodecs.imread(filename);
+	        //读取图像到矩阵中,取灰度图像
+	        if(src.empty()){
+	            return ;
+	        }
+	        try{
+	            Mat dst=src.clone();
+	            //复制矩阵进入dst
+	            Point center =new Point(src.width()/2.0,src.height()/2.0);
+	            Mat affineTrans=Imgproc.getRotationMatrix2D(center, 33.0, 1.0);
+	             
+	            Imgproc.warpAffine(src, dst, affineTrans, dst.size(),Imgproc.INTER_NEAREST);
+	            Imgcodecs.imwrite("img/2.jpg",dst);
+	        }catch(Exception e){
+	            e.printStackTrace();
+	        }
+	   
+   }
 }

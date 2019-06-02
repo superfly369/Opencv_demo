@@ -42,4 +42,24 @@ public class Translation {
         ImageViewer imageViewer = new ImageViewer(src1, "第一幅图片");
         imageViewer.imshow();
     }
+   public void Translate(String filename){
+       Mat src=Imgcodecs.imread(filename);
+       //读取图像到矩阵中,取灰度图像
+       if(src.empty()){
+           return ;
+       }
+       try{
+           Mat dst=src.clone();
+           //复制矩阵进入dst
+           Mat Trans = new Mat(2,3,CvType.CV_32FC1);
+           Trans.put(0, 0 ,new float[] {1,0,100,0,1,50} );
+           //创建平移矩阵
+           Imgproc.warpAffine(src, dst, Trans, dst.size(),Imgproc.INTER_NEAREST);
+           Imgcodecs.imwrite("img/2.jpg",dst);
+
+       }catch(Exception e){
+           e.printStackTrace();
+       }
+	   
+   }
 }

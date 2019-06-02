@@ -10,7 +10,7 @@ public class Resize {
 		try{
 			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 			
-			Mat src=Imgcodecs.imread("img/1.jpg");
+			Mat src=Imgcodecs.imread("D:/1.jpg");
 			//读取图像到矩阵中,取灰度图像
 			if(src.empty()){
 				throw new Exception("no file");
@@ -24,7 +24,7 @@ public class Resize {
 			float height=src.height();
 			
 			Imgproc.resize(src, dst, new Size(width*scale,height*scale));
-			Imgcodecs.imwrite("img/resize0.5.jpg",dst);
+			Imgcodecs.imwrite("img/resize0.6.jpg",dst);
 		
 			scale=1.5f;
 			Imgproc.resize(src, dst, new Size(width*scale,height*scale));
@@ -37,5 +37,27 @@ public class Resize {
 		}
  
 	}
+	public void resize (String filename){
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		Mat src=Imgcodecs.imread(filename);
+		//读取图像到矩阵中,取灰度图像
+		Mat dst=src.clone();
+		//复制矩阵进入dst
+		
+		float scale=0.5f;
+		float width=src.width();
+		float height=src.height();
+		
+		Imgproc.resize(src, dst, new Size(width*scale,height*scale));
+		Imgcodecs.imwrite("img/resize0.5.jpg",dst);
+	
+		scale=1.5f;
+		Imgproc.resize(src, dst, new Size(width*scale,height*scale));
+		Imgcodecs.imwrite("img/resize1.5.jpg",dst);
+		
+		Imgproc.resize(src, dst, new Size(400,400));
+		Imgcodecs.imwrite("img/resize400.jpg", dst);
+	}
+	
  
 }
