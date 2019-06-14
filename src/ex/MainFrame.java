@@ -7,8 +7,12 @@ import java.awt.Image;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.JRadioButton;
+import javax.swing.JSlider;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
@@ -40,13 +44,14 @@ import javax.swing.ImageIcon;
 
 import java.awt.event.ItemListener;
 import java.awt.image.ImageProducer;
+import javax.swing.JMenuBar;
 
 public class MainFrame extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField text1;
 	private String filename;
-
+	private int duibidu = 1;
 	/**
 	 * Launch the application.
 	 */
@@ -67,7 +72,7 @@ public class MainFrame extends JFrame {
 	 * image function.
 	 * 图像平移
 	 */
-	   public void Translate(String filename){
+	   public void Translate(String filename , int x , int y){
 		   System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 	       Mat src=Imgcodecs.imread(filename);
 	       //读取图像到矩阵中,取灰度图像
@@ -78,10 +83,10 @@ public class MainFrame extends JFrame {
 	           Mat dst=src.clone();
 	           //复制矩阵进入dst
 	           Mat Trans = new Mat(2,3,CvType.CV_32FC1);
-	           Trans.put(0, 0 ,new float[] {1,0,100,0,1,50} );
+	           Trans.put(0, 0 ,new float[] {1,0,x,0,1,y} );
 	           //创建平移矩阵
 	           Imgproc.warpAffine(src, dst, Trans, dst.size(),Imgproc.INTER_NEAREST);
-	           Imgcodecs.imwrite("img/2.jpg",dst);
+	           Imgcodecs.imwrite("F://1.jpg",dst);
 
 	       }catch(Exception e){
 	           e.printStackTrace();
@@ -94,6 +99,10 @@ public class MainFrame extends JFrame {
 		public void resize (String filename){
 			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 			Mat src=Imgcodecs.imread(filename);
+		    if(src.empty()){
+		           return ;
+		       }
+		    try{
 			//读取图像到矩阵中,取灰度图像
 			Mat dst=src.clone();
 			//复制矩阵进入dst
@@ -111,11 +120,14 @@ public class MainFrame extends JFrame {
 			
 			Imgproc.resize(src, dst, new Size(400,400));
 			Imgcodecs.imwrite("img/resize400.jpg", dst);
+		    }catch(Exception e){
+		           e.printStackTrace();
+		       }
 		}
 		 /**
 		  * 图像旋转.
 		  */
-		 public void rotate(String filename){
+		 public void rotate(String filename , int x){
 			 System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 			     Mat src=Imgcodecs.imread(filename);
 			        //读取图像到矩阵中,取灰度图像
@@ -126,10 +138,10 @@ public class MainFrame extends JFrame {
 			            Mat dst=src.clone();
 			            //复制矩阵进入dst
 			            Point center =new Point(src.width()/2.0,src.height()/2.0);
-			            Mat affineTrans=Imgproc.getRotationMatrix2D(center, 33.0, 1.0);
+			            Mat affineTrans=Imgproc.getRotationMatrix2D(center, x, 1.0);
 			             
 			            Imgproc.warpAffine(src, dst, affineTrans, dst.size(),Imgproc.INTER_NEAREST);
-			            Imgcodecs.imwrite("img/033.jpg",dst);
+			            Imgcodecs.imwrite("img/3.jpg",dst);
 			        }catch(Exception e){
 			            e.printStackTrace();
 			        }
@@ -177,18 +189,18 @@ public class MainFrame extends JFrame {
 			    temp.copyTo(part3);
 			    
 			    Core.normalize(magnitudeImage, dst, 0, 255, Core.NORM_MINMAX);//归一化处理
-			    Imgcodecs.imwrite("img/2.jpg",dst);
+			    Imgcodecs.imwrite("img/4.jpg",dst);
 			}
 		 /**
 		  * 对比度增强.
 		  */ 
-			public void contrast(String filename){
+			public void contrast(String filename , int a){
 				System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 				Mat src = Imgcodecs.imread(filename);
 				Mat dst = new Mat(src.size(), src.type());
 				int channels = src.channels();//获取图像通道数
 				double[] pixel = new double[3];
-				float alpha=1.2f;
+				float alpha=0.3f * a;
 				float bate=30f;
 				for (int i = 0, rlen = src.rows(); i < rlen; i++) {
 					for (int j = 0, clen = src.cols(); j < clen; j++) {
@@ -210,17 +222,6 @@ public class MainFrame extends JFrame {
 			  * 对比度增强-直方图均衡.
 			  */ 
 			 public void histEqualize(String filename) {
-				 	/*System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-			    	Mat src = Imgcodecs.imread(filename);
-			        Mat dst = src.clone();
-			        Imgproc.cvtColor(dst, dst, Imgproc.COLOR_BGR2YCrCb);
-			        List<Mat> list1 = new ArrayList<>();
-			        Core.split(dst, list1);
-			        Imgproc.equalizeHist(list1.get(0), list1.get(0));
-			        Core.normalize(list1.get(0), list1.get(0), 0, 255, Core.NORM_MINMAX);
-			        Core.merge(list1, dst);
-			        Imgproc.cvtColor(dst, dst, Imgproc.COLOR_YCrCb2BGR);
-			        Imgcodecs.imwrite("img/6.jpg", dst);*/
 				 System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 			        Mat source = Imgcodecs.imread(filename);
 			        Mat dst = new Mat();
@@ -280,11 +281,12 @@ public class MainFrame extends JFrame {
 			 public static void edge(String filename , int threshold) {
 				
 			        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-			        Mat img = Imgcodecs.imread(filename);
+			        Mat src = Imgcodecs.imread(filename);
+			        Mat img = new Mat();
+			        src.copyTo(img); 
 			        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
 			        //
 			        Imgproc.Canny(img, img, threshold, threshold * 3, 3, true);
-			        //
 			        Imgcodecs.imwrite("img/9.jpg", img);
 				    
 				}
@@ -312,7 +314,7 @@ public class MainFrame extends JFrame {
 	 */
 	public MainFrame() {
 		JFileChooser jfc = new JFileChooser();// 文件选择器
-		jfc.setCurrentDirectory(new File("d://"));// 文件选择器的初始目录定为d盘
+		jfc.setCurrentDirectory(new File("c://"));// 文件选择器的初始目录定为d盘
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1293, 660);
@@ -349,6 +351,17 @@ public class MainFrame extends JFrame {
 		panel.add(text1);
 		text1.setColumns(10);
         
+        JSlider slider = new JSlider(0,5,1);
+        // 设置主刻度间隔
+        slider.setMajorTickSpacing(1);
+        // 设置次刻度间隔
+        //slider.setMinorTickSpacing(1);
+        // 绘制 刻度 和 标签
+        slider.setPaintTicks(true);
+        slider.setPaintLabels(true);
+        slider.setBounds(887, 10, 218, 48);
+        panel.add(slider);
+        
 		SelectImgBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//if (e.getActionCommand().equals(SelectImgBtn)){
@@ -370,12 +383,18 @@ public class MainFrame extends JFrame {
 			}
 		});
 		
-		JRadioButton btn1 = new JRadioButton("\u56FE\u7247\u5E73\u79FB");
+		JRadioButton btn1 = new JRadioButton("图像平移");
 		btn1.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e){
-				if(e.getSource() == btn1)
-				{	Translate(filename);
-				    ImageIcon icon = new ImageIcon("img/2.jpg");
+			
+				if(btn1.isSelected())
+				{	int x,y = 0;
+					String input1 = JOptionPane.showInputDialog("请输入横向平移的距离：");
+					x = Integer.valueOf(input1).intValue();
+					String input2 = JOptionPane.showInputDialog("请输入纵向平移的距离：");
+					y = Integer.valueOf(input2).intValue();
+					Translate(filename,x,y);
+					ImageIcon icon = new ImageIcon("F://1.jpg");
 				    icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);		
 			}
@@ -384,12 +403,16 @@ public class MainFrame extends JFrame {
 		btn1.setBounds(0, 13, 157, 27);
 		panel.add(btn1);
 		
-		JRadioButton btn2 = new JRadioButton("\u56FE\u7247\u65CB\u8F6C");
+		JRadioButton btn2 = new JRadioButton("图像旋转");
 		btn2.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e){
-				if(e.getSource() == btn2)
-				{	rotate(filename);
-					ImageIcon icon = new ImageIcon("img/033.jpg");
+				
+				if(btn2.isSelected())
+				{	int x = 0;
+					String input1 = JOptionPane.showInputDialog("请输入旋转的角度：");
+					x = Integer.valueOf(input1).intValue();
+					rotate(filename,x);
+					ImageIcon icon = new ImageIcon("img/3.jpg");
 					icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);
 				    	
@@ -399,15 +422,19 @@ public class MainFrame extends JFrame {
 		btn2.setBounds(0, 45, 157, 27);
 		panel.add(btn2);
 		
-		JRadioButton btn3 = new JRadioButton("\u56FE\u7247\u7F29\u653E");
+		JRadioButton btn3 = new JRadioButton("图像缩放");
 		btn3.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e){
-				if(e.getSource() == btn3)
-				//Translate("img/1.jpg");
-				{	resize(filename);
-					ImageIcon icon = new ImageIcon("img/resize0.5.jpg");
+				
+				if(btn3.isSelected())
+				{	int a = 1;
+					String inputValue = JOptionPane.showInputDialog("请输入缩小的倍数：");
+					a = Integer.valueOf(inputValue).intValue();
+					resize(filename);
+					ImageIcon icon = new ImageIcon(filename);
+					icon.setImage(icon.getImage().getScaledInstance(480/a,480/a,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);
-				   
+					
 			}
 			}
 		});
@@ -420,7 +447,7 @@ public class MainFrame extends JFrame {
 				if(e.getSource() == btn4)
 				{	
 					fouriertransform(filename);
-					ImageIcon icon = new ImageIcon("img/2.jpg");
+					ImageIcon icon = new ImageIcon("img/4.jpg");
 				    icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);	
 			}
@@ -432,11 +459,25 @@ public class MainFrame extends JFrame {
         JRadioButton btn5 = new JRadioButton("\u5BF9\u6BD4\u5EA6\u589E\u5F3A");
         btn5.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e){
-				if(e.getSource() == btn5)
+				if(btn5.isSelected())
 				
-				{	contrast(filename);
-					ImageIcon icon = new ImageIcon("img/5.jpg");
-				    xianshi.setIcon(icon);
+				{		
+						//String inputValue = JOptionPane.showInputDialog("请输入对比度的倍数(1~5)：");
+						//a = Integer.valueOf(inputValue).intValue();
+			        // 添加刻度改变监听器
+			        slider.addChangeListener(new ChangeListener() {
+			            @Override
+			            public void stateChanged(ChangeEvent e) {
+			                //System.out.println("当前值: " + slider.getValue());
+			                duibidu = slider.getValue();
+			                contrast(filename,duibidu);
+			                ImageIcon icon = new ImageIcon("img/5.jpg");
+			                icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
+			                xianshi.setIcon(icon);
+			            }
+			        });	
+				
+				  
 				   
 			}
 			}
@@ -451,6 +492,7 @@ public class MainFrame extends JFrame {
 				
 				{	histEqualize(filename);
 					ImageIcon icon = new ImageIcon("img/6.jpg");
+					icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);
 				   
 			}
@@ -466,6 +508,7 @@ public class MainFrame extends JFrame {
 				
 				{	junzhi(filename);
 					ImageIcon icon = new ImageIcon("img/7.jpg");
+					icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);
 				   
 			}
@@ -481,6 +524,7 @@ public class MainFrame extends JFrame {
 				
 				{	ruihua(filename);
 					ImageIcon icon = new ImageIcon("img/8.jpg");
+					icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);
 				   
 			}
@@ -496,6 +540,7 @@ public class MainFrame extends JFrame {
 				
 				{	edge(filename,40);
 					ImageIcon icon = new ImageIcon("img/9.jpg");
+					icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);
 				   
 			}
@@ -510,6 +555,8 @@ public class MainFrame extends JFrame {
 				
 				{	follow(filename,20);
 					ImageIcon icon = new ImageIcon("img/10.jpg");
+					icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
+				    xianshi.setIcon(null);
 				    xianshi.setIcon(icon);
 				   
 			}
@@ -529,6 +576,8 @@ public class MainFrame extends JFrame {
         group.add(btn8);
         group.add(btn9);
         group.add(btn10);
+        
+
 
 
 		
