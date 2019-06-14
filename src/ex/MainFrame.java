@@ -23,10 +23,18 @@ import javax.swing.JTextField;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
+import ex4.Margin;
+
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 
@@ -127,7 +135,50 @@ public class MainFrame extends JFrame {
 			        }
 			   
 		   }
-		 
+		/* 傅里叶变换*/
+		 public void fouriertransform(String filename) {
+				System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+				Mat src=Imgcodecs.imread(filename);
+				//读取图像到矩阵中,取灰度图像
+				Mat dst=src.clone();
+				//复制矩阵进入dst
+				Mat greyImg = Imgcodecs.imread(filename, Imgcodecs.IMREAD_GRAYSCALE);
+				greyImg.convertTo(greyImg, CvType.CV_32F);
+				int w = Core.getOptimalDFTSize(greyImg.cols());
+				int h = Core.getOptimalDFTSize(greyImg.rows());
+				Mat padded = new Mat();
+				Core.copyMakeBorder(greyImg, padded, 0, h-src.rows(), 0, w-src.cols(), Core.BORDER_CONSTANT, Scalar.all(0));
+				List<Mat> plane = new ArrayList<Mat>();
+				plane.add(padded);
+				plane.add(Mat.zeros(padded.size(), CvType.CV_32FC1));
+				
+				Mat complexImg = new Mat();
+				Core.merge(plane, complexImg);
+				Core.dft(complexImg, complexImg);
+				Core.split(complexImg, plane);
+				Mat magnitudeImage = new Mat();
+				Core.magnitude(plane.get(0), plane.get(1), magnitudeImage);
+				//Core.add(magnitudeImage, Scalar.all(1), magnitudeImage);
+				Core.log(magnitudeImage, magnitudeImage);
+				magnitudeImage = new Mat(magnitudeImage, new Rect(0, 0, magnitudeImage.cols()&-2, magnitudeImage.rows()&-2));
+				
+				int cx = magnitudeImage.cols()/2;
+				int cy = magnitudeImage.rows()/2;
+				Mat part1 = new Mat(magnitudeImage, new Rect(0, 0, cx, cy));
+				Mat part2 = new Mat(magnitudeImage, new Rect(cx, 0, cx, cy));
+				Mat part3 = new Mat(magnitudeImage, new Rect(0, cy, cx, cy));
+				Mat part4 = new Mat(magnitudeImage, new Rect(cx, cy, cx, cy));
+				Mat temp = new Mat();
+				part1.copyTo(temp);
+				part4.copyTo(part1);
+				temp.copyTo(part4);
+			    part2.copyTo(temp);
+			    part3.copyTo(part2);
+			    temp.copyTo(part3);
+			    
+			    Core.normalize(magnitudeImage, dst, 0, 255, Core.NORM_MINMAX);//归一化处理
+			    Imgcodecs.imwrite("img/2.jpg",dst);
+			}
 		 /**
 		  * 对比度增强.
 		  */ 
@@ -223,6 +274,39 @@ public class MainFrame extends JFrame {
 				        Imgcodecs.imwrite("img/8.jpg", dst);
 				    
 				}
+			 /**
+			  * 边缘检测.
+			  */ 
+			 public static void edge(String filename , int threshold) {
+				
+			        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+			        Mat img = Imgcodecs.imread(filename);
+			        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
+			        //
+			        Imgproc.Canny(img, img, threshold, threshold * 3, 3, true);
+			        //
+			        Imgcodecs.imwrite("img/9.jpg", img);
+				    
+				}
+			 //边缘跟踪
+			 public static void follow(String filename , int threshold){
+				 System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+				 Mat img = Imgcodecs.imread(filename);
+			      Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
+			      Imgproc.Canny(img, img, threshold, threshold * 3, 3, true);
+			      List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+			        Mat hierarchy = new Mat();
+			        // 寻找轮廓
+			        Imgproc.findContours(img, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE,
+			                new Point(0, 0));
+			        Mat drawing = Mat.zeros(img.size(), CvType.CV_8UC3);
+			        for( int i = 0; i< contours.size(); i++ )
+			        {
+			          Scalar color = new Scalar( Math.random()*255, Math.random()*255, Math.random()*255 );
+			          Imgproc.drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0);
+			        }
+			        Imgcodecs.imwrite("img/10.jpg", drawing);
+			 }
 	/**
 	 * Create the frame.
 	 */
@@ -335,7 +419,8 @@ public class MainFrame extends JFrame {
 			public void itemStateChanged(ItemEvent e){
 				if(e.getSource() == btn4)
 				{	
-					ImageIcon icon = new ImageIcon("img/2.png");
+					fouriertransform(filename);
+					ImageIcon icon = new ImageIcon("img/2.jpg");
 				    icon.setImage(icon.getImage().getScaledInstance(480,480,Image.SCALE_DEFAULT));
 				    xianshi.setIcon(icon);	
 			}
@@ -403,7 +488,37 @@ public class MainFrame extends JFrame {
 		});
         btn8.setBounds(0, 239, 157, 27);
         panel.add(btn8);
-		ButtonGroup group=new ButtonGroup();
+        
+        JRadioButton btn9 = new JRadioButton("边缘检测");
+        btn9.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e){
+				if(e.getSource() == btn9)
+				
+				{	edge(filename,40);
+					ImageIcon icon = new ImageIcon("img/9.jpg");
+				    xianshi.setIcon(icon);
+				   
+			}
+			}
+		});
+        btn9.setBounds(0, 271, 157, 27);
+        panel.add(btn9);
+		JRadioButton btn10 = new JRadioButton("\u8FB9\u7F18\u68C0\u6D4B\u4E0E\u88C1\u526A");
+        btn10.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e){
+				if(e.getSource() == btn10)
+				
+				{	follow(filename,20);
+					ImageIcon icon = new ImageIcon("img/10.jpg");
+				    xianshi.setIcon(icon);
+				   
+			}
+			}
+		});
+        btn10.setBounds(0, 303, 157, 27);
+        panel.add(btn10);
+        
+        ButtonGroup group=new ButtonGroup();
         group.add(btn1);
         group.add(btn2);
         group.add(btn3);
@@ -412,6 +527,10 @@ public class MainFrame extends JFrame {
         group.add(btn6);
         group.add(btn7);
         group.add(btn8);
+        group.add(btn9);
+        group.add(btn10);
+
+
 		
 	}
 }
